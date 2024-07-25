@@ -21,7 +21,7 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", (string city, int days) =>
+app.MapGet("/weatherforecast", (string city, int days, ILogger<Program> logger) =>
     {
         var forecast = Enumerable.Range(1, days).Select(index =>
                 new WeatherForecast
@@ -32,6 +32,7 @@ app.MapGet("/weatherforecast", (string city, int days) =>
                     summaries[Random.Shared.Next(summaries.Length)]
                 ))
             .ToArray();
+        logger.LogInformation("Retrieved {WeatherCount} weather forecasts for {City}", forecast.Length, city);
         return forecast;
     })
     .WithName("GetWeatherForecast")
