@@ -1,5 +1,6 @@
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,13 +9,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Logging.ClearProviders();
-builder.Logging.AddOpenTelemetry(x => x.AddOtlpExporter(config =>
+// builder.Logging.ClearProviders();
+builder.Logging.AddOpenTelemetry(x =>
 {
-    config.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
-    config.Protocol = OtlpExportProtocol.HttpProtobuf;
-    config.Headers = "X-Seq-ApiKey=5pblppEoCk3XSZAOgjG5";
-}));
+    x.SetResourceBuilder(ResourceBuilder.CreateEmpty()
+        .AddService("Weather Service")
+        .AddAttributes(new Dictionary<string, object>()
+        {
+            ["deployment.environment"] = builder.Environment.EnvironmentName
+        }));
+    
+    x.IncludeScopes = true;
+    x.IncludeFormattedMessage = true;
+    
+    x.AddOtlpExporter(config =>
+    {
+        config.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
+        config.Protocol = OtlpExportProtocol.HttpProtobuf;
+        config.Headers = "X-Seq-ApiKey=PBmFMJ5dVtvDM33PxiVE";
+    });  
+});
 
 var app = builder.Build();
 
