@@ -9,26 +9,58 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// builder.Logging.ClearProviders();
-builder.Logging.AddOpenTelemetry(x =>
+builder.Logging.ClearProviders();
+// builder.Logging.AddOpenTelemetry(x => x.AddConsoleExporter());
+builder.Services.AddLogging(logging =>
 {
-    x.SetResourceBuilder(ResourceBuilder.CreateEmpty()
-        .AddService("Weather Service")
-        .AddAttributes(new Dictionary<string, object>()
+    logging
+        .AddSeq("http://localhost:5341")
+        .AddOpenTelemetry(x =>
         {
-            ["deployment.environment"] = builder.Environment.EnvironmentName
-        }));
-    
-    x.IncludeScopes = true;
-    x.IncludeFormattedMessage = true;
-    
-    x.AddOtlpExporter(config =>
-    {
-        config.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
-        config.Protocol = OtlpExportProtocol.HttpProtobuf;
-        config.Headers = "X-Seq-ApiKey=PBmFMJ5dVtvDM33PxiVE";
-    });  
+            x.IncludeScopes = true;
+            x.IncludeFormattedMessage = true;
+
+            x.AddConsoleExporter();
+            x.AddOtlpExporter(a =>
+            {
+                a.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
+                a.Protocol = OtlpExportProtocol.HttpProtobuf;
+                a.Headers = "X-Seq-ApiKey=4EGyEcbnAw7NR21agTsH";
+            });
+        });
 });
+// builder.Logging.AddOpenTelemetry(x =>
+// {
+//     x.IncludeScopes = true;
+//     x.IncludeFormattedMessage = true;
+//
+//     x.AddConsoleExporter();
+//     x.AddOtlpExporter(a =>
+//     {
+//         a.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
+//         a.Protocol = OtlpExportProtocol.HttpProtobuf;
+//         a.Headers = "X-Seq-ApiKey=4EGyEcbnAw7NR21agTsH";
+//     });  
+// });
+// builder.Logging.AddOpenTelemetry(x =>
+// {
+//     x.SetResourceBuilder(ResourceBuilder.CreateEmpty()
+//         .AddService("Weather Service")
+//         .AddAttributes(new Dictionary<string, object>()
+//         {
+//             ["deployment.environment"] = builder.Environment.EnvironmentName
+//         }));
+//     
+//     x.IncludeScopes = true;
+//     x.IncludeFormattedMessage = true;
+//     
+//     x.AddOtlpExporter(config =>
+//     {
+//         config.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
+//         config.Protocol = OtlpExportProtocol.HttpProtobuf;
+//         config.Headers = "X-Seq-ApiKey=PBmFMJ5dVtvDM33PxiVE";
+//     });  
+// });
 
 var app = builder.Build();
 
