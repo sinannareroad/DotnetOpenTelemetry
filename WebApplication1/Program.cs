@@ -1,3 +1,4 @@
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +9,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Logging.ClearProviders();
-builder.Logging.AddOpenTelemetry(x => x.AddConsoleExporter());
+builder.Logging.AddOpenTelemetry(x => x.AddOtlpExporter(config =>
+{
+    config.Endpoint = new Uri("http://localhost:5341/ingest/otpl/v1/logs");
+    config.Protocol = OtlpExportProtocol.HttpProtobuf;
+    config.Headers = "X-Seq-ApiKey=5pblppEoCk3XSZAOgjG5";
+}));
 
 var app = builder.Build();
 
